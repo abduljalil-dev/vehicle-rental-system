@@ -90,7 +90,7 @@ src/
 
     user/
       user.controller.ts
-      user.routes.ts
+      user.route.ts
       user.service.ts
 
     vehicle/
