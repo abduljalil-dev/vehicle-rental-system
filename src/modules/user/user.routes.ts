@@ -1,34 +1,22 @@
 import { Router } from "express";
-import { authMiddleware } from "../../middleware/auth";
-import {
-  requireAdmin,
-  requireAdminOrSelf,
-} from "../../middleware/roleMiddleware";
-import {
-  getAllUsersController,
-  updateUserController,
-  deleteUserController,
-} from "./user.controller";
-
-export const user.routes.tsoutes = Router();
+import auth from "../../middleware/auth";
+import { userController } from "./user.controller";
 
 export const userRoutes = Router();
 
-// GET /api/v1/users - Admin only
-userRoutes.get("/", authMiddleware, requireAdmin, getAllUsersController);
+// Admin: view all users
+userRoutes.get("/", auth("admin"), userController.getAllUsers);
 
-// PUT /api/v1/users/:userId - Admin or self
+// Admin or self: update user
 userRoutes.put(
   "/:userId",
-  authMiddleware,
-  requireAdminOrSelf("userId"),
-  updateUserController
+  auth("admin", "customer"),
+  userController.updateUser
 );
 
-// DELETE /api/v1/users/:userId - Admin only
+// Admin: delete user
 userRoutes.delete(
   "/:userId",
-  authMiddleware,
-  requireAdmin,
-  deleteUserController
+  auth("admin"),
+  userController.deleteUser
 );

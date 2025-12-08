@@ -1,27 +1,60 @@
 import { Pool } from "pg";
-import config from "./index";
+import config from ".";
 
-if (!config.connection_str) {
-  throw new Error("CONNECTION_STR is not set in environment");
-}
-
+// DB pool
 export const pool = new Pool({
-  connectionString: config.connection_str,
-  ssl: {
-    rejectUnauthorized: false, // Neon friendly
-  },
+  connectionString: `${config.connection_str}`,
 });
 
-export const query = (text: string, params?: any[]) => pool.query(text, params);
+// Initialize DB schema for Vehicle Rental System
+const initDB = async () => {
+  // Users table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100) NOT NULL,
+      email VARCHAR(150) UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      phone VARCHAR(20) NOT NULL,
+      role VARCHAR(50) NOT NULL CHECK (role IN ('admin', 'customer')),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
 
-export const initDB = () => {
-  pool
-    .connect()
-    .then((client) => {
-      console.log("✅ Connected to Postgres");
-      client.release();
-    })
-    .catch((err) => {
-      console.error("❌ Failed to connect to Postgres", err);
-    });
+  // Vehicles table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS vehicles (
+      id SERIAL PRIMARY KEY,
+      vehicle_name VARCHAR(100) NOT NULL,
+      type VARCHAR(20) NOT NULL CHECK (type IN ('car', 'bike', 'van', 'SUV')),
+      registration_number VARCHAR(50) UNIQUE NOT NULL,
+      daily_rent_price NUMERIC(10,2) NOT NULL CHECK (daily_rent_price > 0),
+      availability_status VARCHAR(20) NOT NULL DEFAULT 'available'
+        CHECK (availability_status IN ('available', 'booked')),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW()
+    );
+  `);
+
+  // Bookings table
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS bookings (
+      id SERIAL PRIMARY KEY,
+      customer_id INT NOT NULL REFERENCES users(id),
+      vehicle_id INT NOT NULL REFERENCES vehicles(id),
+      rent_start_date DATE NOT NULL,
+      rent_end_date DATE NOT NULL,
+      total_price NUMERIC(10,2) NOT NULL CHECK (total_price > 0),
+      status VARCHAR(20) NOT NULL DEFAULT 'active'
+        CHECK (status IN ('active', 'cancelled', 'returned')),
+      created_at TIMESTAMP DEFAULT NOW(),
+      updated_at TIMESTAMP DEFAULT NOW(),
+      CHECK (rent_end_date > rent_start_date)
+    );
+  `);
+
+  console.log("✅ Database initialized (users, vehicles, bookings)");
 };
+
+export default initDB;

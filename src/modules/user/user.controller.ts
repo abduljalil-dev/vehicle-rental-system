@@ -1,56 +1,72 @@
-import { Request, Response, NextFunction } from "express";
-import * as userService from "./user.service";
+import { Request, Response } from "express";
+import { userServices } from "./user.service";
 
-export const getAllUsersController = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await userService.getAllUsers();
+    const users = await userServices.getAllUsers();
     return res.status(200).json({
       success: true,
       message: "Users retrieved successfully",
       data: users,
     });
-  } catch (err) {
-    next(err);
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
-export const updateUserController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const updateUser = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.userId);
-    const isAdmin = req.user?.role === "admin";
-    const user = await userService.updateUser(id, req.body, !!isAdmin);
+    const targetId = Number(req.params.userId);
+    const requester = req.user!; // set by auth()
+
+    // Admin can update anyone, customer can update only self
+    if (requester.role !== "admin" && requester.id !== targetId) {
+      return res.status(403).json({
+        success: false,
+        message: "You can only update your own profile",
+      });
+    }
+
+    const isAdmin = requester.role === "admin";
+    const updated = await userServices.updateUser(targetId, req.body, isAdmin);
+
     return res.status(200).json({
       success: true,
       message: "User updated successfully",
-      data: user,
+      data: updated,
     });
-  } catch (err) {
-    next(err);
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
 };
 
-export const deleteUserController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+const deleteUser = async (req: Request, res: Response) => {
   try {
-    const id = Number(req.params.userId);
-    await userService.deleteUser(id);
+    const targetId = Number(req.params.userId);
+
+    await userServices.deleteUser(targetId);
+
     return res.status(200).json({
       success: true,
       message: "User deleted successfully",
       data: null,
     });
-  } catch (err) {
-    next(err);
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      message: err.message,
+    });
   }
+};
+
+export const userController = {
+  getAllUsers,
+  updateUser,
+  deleteUser,
 };

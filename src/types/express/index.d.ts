@@ -1,12 +1,9 @@
-declare namespace Express {
-  interface UserPayload {
-    id: number;
-    role: "admin" | "customer";
-  }
+import { JwtPayload } from "jsonwebtoken";
 
-  interface Request {
-    user?: UserPayload;
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JwtPayload;
+    }
   }
 }
-
-export {};

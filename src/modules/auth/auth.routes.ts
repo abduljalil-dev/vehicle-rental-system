@@ -1,7 +1,11 @@
+// src/modules/auth/auth.routes.ts
 import { Router } from "express";
-import { signupController, signinController } from "./auth.controller";
+import { authController } from "./auth.controller";
 
 export const authRoutes = Router();
 
-authRoutes.post("/signup", signupController);
-authRoutes.post("/signin", signinController);
+// POST /api/v1/auth/signup
+authRoutes.post("/signup", authController.signupUser);
+
+// POST /api/v1/auth/signin
+authRoutes.post("/signin", authController.loginUser);

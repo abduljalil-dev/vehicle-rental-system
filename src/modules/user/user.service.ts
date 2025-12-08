@@ -1,24 +1,25 @@
-import { query } from "../../config/db";
-import { UserRole } from "../auth/auth.service";
+import { pool } from "../../config/db";
+import { QueryResult } from "pg";
 
 interface UpdateUserInput {
   name?: string;
   phone?: string;
-  role?: UserRole;
+  role?: "admin" | "customer";
 }
 
-export const getAllUsers = async () => {
-  const result = await query(
+const getAllUsers = async () => {
+  const result: QueryResult = await pool.query(
     "SELECT id, name, email, phone, role FROM users ORDER BY id ASC"
   );
   return result.rows;
 };
 
-export const updateUser = async (
+const updateUser = async (
   id: number,
   data: UpdateUserInput,
   isAdmin: boolean
 ) => {
+  // if not admin, cannot change role
   if (!isAdmin) {
     delete data.role;
   }
@@ -35,47 +36,44 @@ export const updateUser = async (
   }
 
   if (fields.length === 0) {
-    const err: any = new Error("No fields to update");
-    err.status = 400;
-    throw err;
+    throw new Error("No fields to update");
   }
 
   values.push(id);
 
-  const result = await query(
+  const result = await pool.query(
     `UPDATE users SET ${fields.join(", ")}
      WHERE id = $${idx}
      RETURNING id, name, email, phone, role`,
     values
   );
 
-  if (result.rowCount === 0) {
-    const err: any = new Error("User not found");
-    err.status = 404;
-    throw err;
+  if (result.rows.length === 0) {
+    throw new Error("User not found");
   }
 
   return result.rows[0];
 };
 
-export const deleteUser = async (id: number) => {
-  const activeBookings = await query(
+const deleteUser = async (id: number) => {
+  // cannot delete if user has active bookings
+  const activeBookings = await pool.query(
     "SELECT id FROM bookings WHERE customer_id = $1 AND status = $2",
     [id, "active"]
   );
 
-  if (activeBookings.rowCount > 0) {
-    const err: any = new Error(
-      "User has active bookings and cannot be deleted"
-    );
-    err.status = 400;
-    throw err;
+  if (activeBookings.rows.length > 0) {
+    throw new Error("User has active bookings and cannot be deleted");
   }
 
-  const result = await query("DELETE FROM users WHERE id = $1", [id]);
+  const result = await pool.query("DELETE FROM users WHERE id = $1", [id]);
   if (result.rowCount === 0) {
-    const err: any = new Error("User not found");
-    err.status = 404;
-    throw err;
+    throw new Error("User not found");
   }
+};
+
+export const userServices = {
+  getAllUsers,
+  updateUser,
+  deleteUser,
 };
