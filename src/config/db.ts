@@ -21,6 +21,13 @@ const initDB = async () => {
       updated_at TIMESTAMP DEFAULT NOW()
     );
   `);
+  await pool.query(`
+  INSERT INTO users (name, email, password, phone, role)
+  VALUES ('Admin', 'admin@vrental.com',
+    '$2a$10$RiQkRl2kVXG8cPyB0jIcH.VoFJPpAKv03fVtBgUzcx9Z5ZEVeF7l6',
+    '01800000000', 'admin')
+  ON CONFLICT (email) DO NOTHING;
+`);
 
   // Vehicles table
   await pool.query(`
