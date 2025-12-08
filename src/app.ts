@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { authRoutes } from "./modules/auth/auth.routes";
+import { authRoutes } from "./modules/auth/auth.routes.ts";
 import { userRoutes } from "./modules/user/user.routes";
 import { vehicleRoutes } from "./modules/vehicle/vehicle.routes";
 import { bookingRoutes } from "./modules/booking/booking.routes";
