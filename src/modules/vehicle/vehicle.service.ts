@@ -1,6 +1,6 @@
 import { pool } from "../../config/db";
 
-export type VehicleType = "car" | "bike" | "van" | "SUV";
+export type VehicleType = "car" | "bike" | "motorcycle" | "van" | "SUV";
 export type VehicleAvailability = "available" | "booked";
 
 interface VehicleInput {

@@ -3,7 +3,7 @@
 A backend REST API for managing a vehicle rental system with role-based access control, built using **Node.js**, **TypeScript**, **Express**, and **PostgreSQL (NeonDB)**.
 
 > **Live URL:**
-> `https://My-car-rental-api.example.com`
+> `https://vehicle-rental-server-omega.vercel.app`
 > _(Replace with your actual deployment URL once hosted.)_
 
 ---
@@ -46,7 +46,7 @@ A backend REST API for managing a vehicle rental system with role-based access c
 
 ### 🧱 Clean & Modular Architecture
 - Feature-based modules:
-  - `auth`, `user`, `vehicle`, `booking`, `todo` (example).
+  - `auth`, `user`, `vehicle`, `booking` (example).
 - Clear separation of concerns:
   - **routes → controllers → services → database layer**.
 - Centralized config and middleware.

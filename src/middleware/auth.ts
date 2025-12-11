@@ -1,6 +1,4 @@
 // src/middleware/auth.ts
-// higher order function  return korbe function k
-
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import config from "../config";
